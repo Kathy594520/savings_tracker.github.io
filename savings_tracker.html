@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小錢鼠的存款記錄器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #e0f7fa; /* 浅蓝色背景 */
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+            justify-items: center;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4CAF50; /* 绿色背景 */
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        .button img {
+            display: none;
+            width: 50px;
+            height: 50px;
+        }
+        .button.locked img {
+            display: block;
+        }
+        .button.locked span {
+            display: none;
+        }
+        .button.locked {
+            background-color: #FF0000; /* 红色背景 */
+        }
+        .unlock-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .select-month {
+            margin-bottom: 20px;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 16px; /* 放大字体 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-image {
+            width: 50px;
+            height: 50px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>小錢鼠的存款記錄器</h1>
+    <h2>
+        <select class="select-month">
+            <option value="January">一月</option>
+            <option value="February">二月</option>
+            <option value="March">三月</option>
+            <option value="April">四月</option>
+            <option value="May">五月</option>
+            <option value="June">六月</option>
+            <option value="July">七月</option>
+            <option value="August">八月</option>
+            <option value="September">九月</option>
+            <option value="October">十月</option>
+            <option value="November">十一月</option>
+            <option value="December">十二月</option>
+        </select>
+    </h2>
+    <div class="button-grid">
+        <!-- 31 buttons -->
+        <script>
+            for (let i = 1; i <= 31; i++) {
+                document.write(`
+                    <button class="button" id="day-${i}" onclick="lockButton(${i})">
+                        <span>${i}</span>
+                        <img src="20240720.jpg" alt="小錢鼠">
+                    </button>
+                `);
+            }
+        </script>
+    </div>
+    <button class="unlock-button" onclick="unlockAllButtons()">全部解鎖</button>
+    <footer>
+        仙姑凱西設計
+        <img src="kathy.jpg" alt="Kathy" class="footer-image">
+    </footer>
+
+    <script>
+        function lockButton(day) {
+            const button = document.getElementById(`day-${day}`);
+            if (button.classList.contains('locked')) {
+                if (confirm('此按鈕已鎖定。是否解鎖？')) {
+                    button.classList.remove('locked');
+                }
+            } else {
+                button.classList.add('locked');
+            }
+        }
+
+        function unlockAllButtons() {
+            if (confirm('確定要解鎖所有按鈕嗎？')) {
+                const buttons = document.querySelectorAll('.button');
+                buttons.forEach(button => {
+                    button.classList.remove('locked');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
