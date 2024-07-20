@@ -104,7 +104,7 @@
                 document.write(`
                     <button class="button" id="day-${i}" onclick="lockButton(${i})">
                         <span>${i}</span>
-                        <img src="20240720.jpg" alt="小錢鼠">
+                        <img src="20240720.png" alt="小錢鼠">
                     </button>
                 `);            
             }
@@ -113,7 +113,7 @@
     <button class="unlock-button" onclick="unlockAllButtons()">全部解鎖</button>
     <footer>            
         仙姑凱西設計
-        <img src="kathy.jpg" alt="Kathy" class="footer-image">
+        <img src="kathy.png" alt="Kathy" class="footer-image">
     </footer>            
 
     <script>            
@@ -139,7 +139,7 @@
         }
 
         function playSound() {
-            const audio = new Audio('https://kathy594520.github.io/savings_tracker.github.io/save/sound.mp3');
+            const audio = new Audio('https://kathy594520.github.io/savings_tracker.github.io/save/sound.Mp3');
             audio.play().catch(error => {
                 console.error('Error playing sound:', error);
             });                            
