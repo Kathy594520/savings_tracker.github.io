@@ -7,12 +7,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-weight: bold; /* 设置所有字体为粗体 */
+            font-weight: bold;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #e0f7fa; /* 浅蓝色背景 */
+            background-color: #e0f7fa;
         }
         h1, h2 {
             text-align: center;
@@ -27,10 +27,10 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background-color: #4CAF50; /* 绿色背景 */
+            background-color: #4CAF50;
             color: white;
-            font-size: 20px; /* 放大按钮内的文字 */
-            font-weight: bold; /* 设置按钮内的文字为粗体 */
+            font-size: 20px;
+            font-weight: bold;
             cursor: pointer;
             position: relative;
             display: flex;
@@ -50,7 +50,7 @@
             display: none;
         }
         .button.locked {
-            background-color: #FF0000; /* 红色背景 */
+            background-color: #FF0000;
         }
         .unlock-button {
             display: block;
@@ -67,7 +67,7 @@
         }
         footer {
             margin-top: 20px;
-            font-size: 16px; /* 放大字体 */
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -102,7 +102,7 @@
         <script>
             for (let i = 1; i <= 31; i++) {
                 document.write(`
-                    <button class="button" id="day-${i}" onclick="lockButton(${i})">
+                    <button class="button" id="day-${i}" onclick="toggleButton(${i})">
                         <span>${i}</span>
                         <img src="20240720.png" alt="小錢鼠">
                     </button>
@@ -117,14 +117,18 @@
     </footer>
 
     <script>
-        function lockButton(day) {
+        document.addEventListener('DOMContentLoaded', (event) => {
+            loadButtonStates();
+        });
+
+        function toggleButton(day) {
             const button = document.getElementById(`day-${day}`);
             if (button.classList.contains('locked')) {
-                if (confirm('此按鈕已鎖定。是否解鎖？')) {
-                    button.classList.remove('locked');
-                }
+                button.classList.remove('locked');
+                saveButtonState(day, false);
             } else {
                 button.classList.add('locked');
+                saveButtonState(day, true);
                 playSound();
             }
         }
@@ -133,16 +137,31 @@
             if (confirm('確定要解鎖所有按鈕嗎？')) {
                 const buttons = document.querySelectorAll('.button');
                 buttons.forEach(button => {
+                    const day = button.id.split('-')[1];
                     button.classList.remove('locked');
+                    saveButtonState(day, false);
                 });
             }
         }
 
-       function playSound() {
-            const audio = new Audio('sound.MP3');
-            audio.play().catch(error => {
-                console.error('Error playing sound:', error);
+        function saveButtonState(day, isLocked) {
+            localStorage.setItem(`button-${day}`, isLocked);
+        }
+
+        function loadButtonStates() {
+            const buttons = document.querySelectorAll('.button');
+            buttons.forEach(button => {
+                const day = button.id.split('-')[1];
+                const isLocked = localStorage.getItem(`button-${day}`) === 'true';
+                if (isLocked) {
+                    button.classList.add('locked');
+                }
             });
+        }
+
+        function playSound() {
+            const audio = new Audio('sound.mp3');
+            audio.play();
         }
     </script>
 </body>
