@@ -104,28 +104,28 @@
                 document.write(`
                     <button class="button" id="day-${i}" onclick="lockButton(${i})">
                         <span>${i}</span>
-                        <img src="20240720.png" alt="小錢鼠">
+                        <img src="20240720.jpg" alt="小錢鼠">
                     </button>
-                `);
+                `);            
             }
-        </script>
-    </div>
+        </script>            
+    </div>            
     <button class="unlock-button" onclick="unlockAllButtons()">全部解鎖</button>
-    <footer>
+    <footer>            
         仙姑凱西設計
-        <img src="kathy.png" alt="Kathy" class="footer-image">
-    </footer>
+        <img src="kathy.jpg" alt="Kathy" class="footer-image">
+    </footer>            
 
-    <script>
+    <script>            
         function lockButton(day) {
             const button = document.getElementById(`day-${day}`);
             if (button.classList.contains('locked')) {
                 if (confirm('此按鈕已鎖定。是否解鎖？')) {
                     button.classList.remove('locked');
                 }
-            } else {
+            } else {                  
                 button.classList.add('locked');
-                playSound();
+                playSound();                    
             }
         }
 
@@ -134,14 +134,16 @@
                 const buttons = document.querySelectorAll('.button');
                 buttons.forEach(button => {
                     button.classList.remove('locked');
-                });
+                });                            
             }
         }
 
         function playSound() {
-            const audio = new Audio('sound.Mp3');
-            audio.play();
+            const audio = new Audio('https://kathy594520.github.io/savings_tracker.github.io/save/sound.mp3');
+            audio.play().catch(error => {
+                console.error('Error playing sound:', error);
+            });                            
         }
-    </script>
-</body>
-</html>
+    </script>                          
+</body>                          
+</html>                        
