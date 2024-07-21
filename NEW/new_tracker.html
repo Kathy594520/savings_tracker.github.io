@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大錢鼠的存款記錄器</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            font-weight: bold;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+            text-align: center;
+            background-color: #e0f7fa;
+        }
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .select-month {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 10px;
+            justify-items: center;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        .button span, .button img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .button img {
+            display: none;
+            width: 50px;
+            height: 50px;
+        }
+        .button.locked img {
+            display: block;
+        }
+        .button.locked span {
+            display: none;
+        }
+        .button.locked {
+            background-color: #FF0000;
+        }
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+        }
+        .control-button {
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .score-box, .report-box, .total-savings, .savings-goal {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .savings-goal-input {
+            margin-top: 20px;
+            font-size: 1.2em;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-image {
+            width: 50px;
+            height: 50px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>大錢鼠的存款記錄器</h1>
+    <h2>
+        <select class="select-month">
+            <option value="January">一月</option>
+            <option value="February">二月</option>
+            <option value="March">三月</option>
+            <option value="April">四月</option>
+            <option value="May">五月</option>
+            <option value="June">六月</option>
+            <option value="July">七月</option>
+            <option value="August">八月</option>
+            <option value="September">九月</option>
+            <option value="October">十月</option>
+            <option value="November">十一月</option>
+            <option value="December">十二月</option>
+        </select>
+    </h2>
+    <div class="button-grid" id="button-grid">
+        <!-- 31 buttons will be generated here -->
+    </div>
+    <div class="control-buttons">
+        <button class="control-button" onclick="unlockAllButtons()">全部解鎖</button>
+        <button class="control-button" onclick="calculateScore()">計算</button>
+        <button class="control-button" onclick="generateReport()">生成報告</button>
+        <button class="control-button" onclick="exportData()">匯出數據</button>
+    </div>
+    <div class="score-box" id="score">連續三日完成儲蓄次數: 0 次</div>
+    <div class="total-savings" id="total-savings">總儲蓄金額: 0 元</div>
+    <div class="savings-goal" id="savings-goal">儲蓄目標: 未設定</div>
+    <input type="number" class="savings-goal-input" id="goal-input" placeholder="設定儲蓄目標 (元)">
+    <button class="control-button" onclick="setSavingsGoal()">設定目標</button>
+    <div class="report-box" id="report">每日儲蓄報告:</div>
+    <footer>
+        仙姑凱西設計
+        <img src="kathy.png" alt="Kathy" class="footer-image">
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            generateButtons();
+            loadButtonStates();
+            updateTotalSavings();
+            loadSavingsGoal();
+        });
+
+        function generateButtons() {
+            const buttonGrid = document.getElementById('button-grid');
+            for (let i = 1; i <= 31; i++) {
+                const button = document.createElement('button');
+                button.classList.add('button');
+                button.id = `day-${i}`;
+                button.onclick = () => lockButton(i);
+                button.innerHTML = `<span>${i}</span><img src="20240720.png" alt="小錢鼠">`;
+                buttonGrid.appendChild(button);
+            }
+        }
+
+        function lockButton(day) {
+            const button = document.getElementById(`day-${day}`);
+            if (button.classList.contains('locked')) {
+                if (confirm('此按鈕已鎖定。是否解鎖？')) {
+                    button.classList.remove('locked');
+                    saveButtonState(day, false);
+                    playUnlockSound();
+                    updateTotalSavings();
+                }
+            } else {
+                const amount = prompt("請輸入儲蓄金額:");
+                if (amount) {
+                    button.classList.add('locked');
+                    saveButtonState(day, true, amount);
+                    playLockSound();
+                    updateTotalSavings();
+                }
+            }
+        }
+
+        function unlockAllButtons() {
+            if (confirm('確定要解鎖所有按鈕嗎？')) {
+                const buttons = document.querySelectorAll('.button');
+                buttons.forEach(button => {
+                    const day = button.id.split('-')[1];
+                    button.classList.remove('locked');
+                    saveButtonState(day, false);
+                });
+                localStorage.clear();
+                playUnlockSound();
+                document.getElementById('total-savings').textContent = "總儲蓄金額: 0 元";
+                document.getElementById('savings-goal').textContent = "儲蓄目標: 未設定";
+                document.getElementById('report').innerHTML = "每日儲蓄報告:";
+                document.getElementById('score').textContent = "連續三日完成儲蓄次數: 0 次";
+            }
+        }
+
+        function saveButtonState(day, isLocked, amount = 0) {
+            localStorage.setItem(`button-${day}`, isLocked);
+            if (isLocked) {
+                localStorage.setItem(`amount-${day}`, amount);
+            } else {
+                localStorage.removeItem(`amount-${day}`);
+            }
+        }
+
+        function loadButtonStates() {
+            const buttons = document.querySelectorAll('.button');
+            buttons.forEach(button => {
+                const day = button.id.split('-')[1];
+                const isLocked = localStorage.getItem(`button-${day}`) === 'true';
+                if (isLocked) {
+                    button.classList.add('locked');
+                }
+            });
+        }
+
+        function playLockSound() {
+            const audio = new Audio('sound.MP3');
+            audio.play();
+        }
+
+        function playUnlockSound() {
+            const audio = new Audio('2.mp3');
+            audio.play();
+        }
+
+        function calculateScore() {
+            const lockedDays = [];
+            document.querySelectorAll('.button.locked').forEach(button => {
+                const day = parseInt(button.id.split('-')[1], 10);
+                lockedDays.push(day);
+            });
+
+            lockedDays.sort((a, b) => a - b);
+
+            let lines = 0;
+            for (let i = 0; i < lockedDays.length - 2; i++) {
+                if (lockedDays[i + 1] === lockedDays[i] + 1 && lockedDays[i + 2] === lockedDays[i] + 2) {
+                    lines++;
+                    i += 2; // Skip the next two days to avoid double counting
+                }
+            }
+
+            document.getElementById('score').textContent = `連續三日完成儲蓄次數: ${lines} 次`;
+        }
+
+        function generateReport() {
+            const lockedDays = [];
+            document.querySelectorAll('.button.locked').forEach(button => {
+                const day = parseInt(button.id.split('-')[1], 10);
+                lockedDays.push(day);
+            });
+
+            let totalDays = 31;
+            let completedDays = lockedDays.length;
+            let incompleteDays = totalDays - completedDays;
+
+            let report = `完成儲蓄天數: ${completedDays}<br>未完成儲蓄天數: ${incompleteDays}`;
+
+            document.getElementById('report').innerHTML = report;
+        }
+
+        function updateTotalSavings() {
+            let totalSavings = 0;
+            for (let i = 1; i <= 31; i++) {
+                const amount = localStorage.getItem(`amount-${i}`);
+                if (amount) {
+                    totalSavings += parseFloat(amount);
+                }
+            }
+            document.getElementById('total-savings').textContent = `總儲蓄金額: ${totalSavings} 元`;
+            updateSavingsGoalProgress(totalSavings);
+        }
+
+        function setSavingsGoal() {
+            const goal = document.getElementById('goal-input').value;
+            if (goal) {
+                localStorage.setItem('savings-goal', goal);
+                updateSavingsGoalProgress();
+            }
+        }
+
+        function loadSavingsGoal() {
+            const goal = localStorage.getItem('savings-goal');
+            if (goal) {
+                updateSavingsGoalProgress();
+            } else {
+                document.getElementById('savings-goal').textContent = "儲蓄目標: 未設定";
+            }
+        }
+
+        function updateSavingsGoalProgress(totalSavings = null) {
+            const goal = localStorage.getItem('savings-goal');
+            if (goal) {
+                if (totalSavings === null) {
+                    totalSavings = 0;
+                    for (let i = 1; i <= 31; i++) {
+                        const amount = localStorage.getItem(`amount-${i}`);
+                        if (amount) {
+                            totalSavings += parseFloat(amount);
+                        }
+                    }
+                }
+                const progress = (totalSavings / goal) * 100;
+                document.getElementById('savings-goal').textContent = `儲蓄目標: ${goal} 元 (${progress.toFixed(2)}%)`;
+            }
+        }
+
+        function exportData() {
+            const rows = [['Day', '金額']];
+            for (let i = 1; i <= 31; i++) {
+                const amount = localStorage.getItem(`amount-${i}`);
+                if (amount) {
+                    rows.push([`Day ${i}`, amount]);
+                }
+            }
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + rows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "savings_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
